@@ -64,10 +64,19 @@ exports.login = async (req, res) => {
       },
     );
 
-    res.json({
-      token,
-      user,
-    });
+    const safeUser = {
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  address: user.address,
+  profileImage: user.profileImage,
+};
+
+res.json({
+  token,
+  user: safeUser,
+});
 
   } catch (error) {
     res.status(500).json(error);
