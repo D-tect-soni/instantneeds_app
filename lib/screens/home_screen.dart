@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'service_details_screen.dart';
 import 'order_history_screen.dart';
@@ -25,7 +24,7 @@ class HomeScreen extends StatelessWidget {
       {
         "name": "Food",
         "icon": Icons.fastfood,
-      },
+},
       {
         "name": "Plumber",
         "icon": Icons.plumbing,
@@ -40,21 +39,24 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7FA),
 
       appBar: AppBar(
-        title: const Text("InstantNeeds"),
         backgroundColor: Colors.teal,
+        title: const Text(
+          "InstantNeeds",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
       ),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
             const Text(
               "Hi Devansh 👋",
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -68,7 +70,10 @@ class HomeScreen extends StatelessWidget {
                   color: Colors.red,
                 ),
                 SizedBox(width: 5),
-                Text("Bhopal, MP"),
+                Text(
+                  "Bhopal, Madhya Pradesh",
+                  style: TextStyle(fontSize: 16),
+                ),
               ],
             ),
 
@@ -76,29 +81,27 @@ class HomeScreen extends StatelessWidget {
 
             TextField(
               decoration: InputDecoration(
-                hintText:
-                    "Search Services...",
-                prefixIcon:
-                    const Icon(Icons.search),
-                border:
-                    OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(12),
+                hintText: "Search Services...",
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
             const Text(
               "Popular Services",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 15),
 
             Expanded(
               child: GridView.builder(
@@ -106,53 +109,45 @@ class HomeScreen extends StatelessWidget {
                 gridDelegate:
                     const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: 1,
                 ),
-                itemBuilder:
-                    (context, index) {
-
-                  return GestureDetector(
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(16),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              ServiceDetailsScreen(
-                            serviceName:
-                                services[index]["name"],
+                          builder: (_) => ServiceDetailsScreen(
+                            serviceName: services[index]["name"],
                           ),
                         ),
                       );
                     },
                     child: Card(
                       elevation: 4,
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                                15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
 
                           Icon(
                             services[index]["icon"],
-                            size: 45,
+                            size: 50,
                             color: Colors.teal,
                           ),
 
-                          const SizedBox(
-                              height: 10),
+                          const SizedBox(height: 12),
 
                           Text(
                             services[index]["name"],
-                            style:
-                                const TextStyle(
-                              fontWeight:
-                                  FontWeight.bold,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -166,35 +161,26 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar:
-          BottomNavigationBar(
-        selectedItemColor:
-            Colors.teal,
-
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        selectedItemColor: Colors.teal,
         onTap: (index) {
-
           if (index == 1) {
-
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) =>
-                    const OrderHistoryScreen(),
+                builder: (_) => const OrderHistoryScreen(),
               ),
             );
-
           } else if (index == 2) {
-
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) =>
-                    const ProfileScreen(),
+                builder: (_) => const ProfileScreen(),
               ),
             );
           }
         },
-
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -213,4 +199,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-

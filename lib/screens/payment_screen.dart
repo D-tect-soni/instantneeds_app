@@ -45,20 +45,39 @@ class _PaymentScreenState
   void openCheckout() {
 
     var options = {
-      'key': 'rzp_test_T5XBMusISbtfkk',
-      'amount': widget.amount * 100,
+      'key': 'rzp_test_T5Z148SqKauCOT',
+      'amount':  100,
       'name': 'InstantNeeds',
       'description': 'Service Booking',
+      'timeout': 300,
+
       'prefill': {
         'contact': '9999999999',
         'email': 'devansh@gmail.com'
+      },
+
+      'theme': {
+        'color': '#009688'
+      },
+
+      'retry': {
+        'enabled': true,
+        'max_count': 1
       }
     };
 
     try {
       _razorpay.open(options);
     } catch (e) {
-      debugPrint(e.toString());
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            "Checkout Error: $e",
+          ),
+        ),
+      );
     }
   }
 
@@ -68,9 +87,10 @@ class _PaymentScreenState
 
     ScaffoldMessenger.of(context)
         .showSnackBar(
-      const SnackBar(
-        content:
-            Text("Payment Successful"),
+      SnackBar(
+        content: Text(
+          "Payment Success\n${response.paymentId}",
+        ),
       ),
     );
 
@@ -87,11 +107,18 @@ class _PaymentScreenState
     PaymentFailureResponse response,
   ) {
 
+    print(
+        "ERROR CODE = ${response.code}");
+    print(
+        "ERROR MESSAGE = ${response.message}");
+
     ScaffoldMessenger.of(context)
         .showSnackBar(
       SnackBar(
+        duration:
+            const Duration(seconds: 5),
         content: Text(
-          "Payment Failed: ${response.message}",
+          "Code: ${response.code}\nMessage: ${response.message}",
         ),
       ),
     );
@@ -105,7 +132,7 @@ class _PaymentScreenState
         .showSnackBar(
       SnackBar(
         content: Text(
-          "External Wallet: ${response.walletName}",
+          "Wallet: ${response.walletName}",
         ),
       ),
     );
@@ -128,8 +155,9 @@ class _PaymentScreenState
         backgroundColor: Colors.teal,
         title: const Text(
           "Payment",
-          style:
-              TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
       ),
 
