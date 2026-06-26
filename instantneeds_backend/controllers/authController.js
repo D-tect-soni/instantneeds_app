@@ -1,7 +1,8 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 // Register
 exports.register = async (req, res) => {
   try {
@@ -127,6 +128,46 @@ exports.updateProfile = async (req, res) => {
       message: "Profile Updated Successfully",
       user,
     });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+exports.uploadProfileImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No image selected",
+      });
+    }
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "instantneeds/profile",
+      },
+      async (error, result) => {
+        if (error) {
+          return res.status(500).json({
+            message: error.message,
+          });
+        }
+
+        const user = await User.findById(req.user.id);
+
+        user.profileImage = result.secure_url;
+
+        await user.save();
+
+        res.json({
+          message: "Profile Image Updated",
+          image: result.secure_url,
+        });
+      },
+    );
+
+    streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
 
   } catch (error) {
     res.status(500).json({

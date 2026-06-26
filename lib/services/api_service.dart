@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   static const String baseUrl = "http://10.93.37.57:5000";
@@ -13,33 +15,19 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse("$baseUrl/api/auth/register"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "name": name,
-        "email": email,
-        "password": password,
-      }),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"name": name, "email": email, "password": password}),
     );
 
     return jsonDecode(response.body);
   }
 
   // Login User
-  static Future login({
-    required String email,
-    required String password,
-  }) async {
+  static Future login({required String email, required String password}) async {
     final response = await http.post(
       Uri.parse("$baseUrl/api/auth/login"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-      }),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "password": password}),
     );
 
     return jsonDecode(response.body);
@@ -54,9 +42,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse("$baseUrl/api/orders"),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "serviceName": serviceName,
         "address": address,
@@ -70,9 +56,7 @@ class ApiService {
 
   // Get Orders
   static Future getOrders() async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/api/orders"),
-    );
+    final response = await http.get(Uri.parse("$baseUrl/api/orders"));
 
     return jsonDecode(response.body);
   }
@@ -110,13 +94,37 @@ class ApiService {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
       },
-      body: jsonEncode({
-        "name": name,
-        "phone": phone,
-        "address": address,
-      }),
+      body: jsonEncode({"name": name, "phone": phone, "address": address}),
     );
 
     return jsonDecode(response.body);
+  }
+
+  // Upload Profile Image
+  static Future uploadProfileImage(File imageFile) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String? token = prefs.getString("token");
+
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse("$baseUrl/api/auth/upload-profile-image"),
+    );
+
+    request.headers["Authorization"] = "Bearer $token";
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        "image",
+        imageFile.path,
+        contentType: MediaType("image", "jpeg"),
+      ),
+    );
+
+    var response = await request.send();
+
+    var responseData = await response.stream.bytesToString();
+
+    return jsonDecode(responseData);
   }
 }
