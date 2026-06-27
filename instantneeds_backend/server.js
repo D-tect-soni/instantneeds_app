@@ -9,7 +9,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-
+const shopRoutes = require("./routes/shopRoutes");
 const app = express();
 
 connectDB();
@@ -19,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/shop", shopRoutes);
 
 app.get("/", (req, res) => {
   res.send("InstantNeeds API Running");
