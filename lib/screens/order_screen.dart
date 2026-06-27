@@ -5,17 +5,27 @@ import 'payment_screen.dart';
 class OrderScreen extends StatefulWidget {
   final String serviceName;
 
-  const OrderScreen({super.key, required this.serviceName});
+  const OrderScreen({
+    super.key,
+    required this.serviceName,
+  });
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final TextEditingController addressController = TextEditingController();
+  final TextEditingController addressController =
+      TextEditingController();
 
   int quantity = 1;
   final int pricePerUnit = 99;
+
+  @override
+  void dispose() {
+    addressController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +40,15 @@ class _OrderScreenState extends State<OrderScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
           children: [
             Text(
               widget.serviceName,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -52,13 +66,17 @@ class _OrderScreenState extends State<OrderScreen> {
 
             const Text(
               "Quantity",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 10),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
               children: [
                 IconButton(
                   onPressed: () {
@@ -103,8 +121,13 @@ class _OrderScreenState extends State<OrderScreen> {
             Card(
               elevation: 4,
               child: ListTile(
-                leading: const Icon(Icons.currency_rupee, color: Colors.green),
-                title: const Text("Total Amount"),
+                leading: const Icon(
+                  Icons.currency_rupee,
+                  color: Colors.green,
+                ),
+                title: const Text(
+                  "Total Amount",
+                ),
                 trailing: Text(
                   "₹$totalAmount",
                   style: const TextStyle(
@@ -122,50 +145,107 @@ class _OrderScreenState extends State<OrderScreen> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                style:
+                    ElevatedButton.styleFrom(
+                  backgroundColor:
+                      Colors.teal,
+                ),
                 onPressed: () async {
-                  if (addressController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Please enter address")),
+                  if (addressController.text
+                      .trim()
+                      .isEmpty) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Please enter address",
+                        ),
+                      ),
                     );
                     return;
                   }
 
                   try {
-                    final response = await ApiService.createOrder(
-                      serviceName: widget.serviceName,
-                      address: addressController.text.trim(),
+                    final response =
+                        await ApiService
+                            .createOrder(
+                      serviceName:
+                          widget.serviceName,
+                      address:
+                          addressController
+                              .text
+                              .trim(),
                       quantity: quantity,
                       amount: totalAmount,
                     );
 
-                    if (response["_id"] != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                    print(
+                      "Order Response => $response",
+                    );
+
+                    if (response["order"] !=
+                        null) {
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(
                         const SnackBar(
-                          content: Text("Order Saved Successfully"),
+                          content: Text(
+                            "Order Saved Successfully",
+                          ),
                         ),
                       );
 
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PaymentScreen(amount: totalAmount),
+                          builder: (_) =>
+                              PaymentScreen(
+                            amount:
+                                totalAmount,
+                          ),
                         ),
                       );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Order Save Failed")),
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            response["message"] ??
+                                "Order Save Failed",
+                          ),
+                        ),
                       );
                     }
                   } catch (e) {
+                    print(
+                      "Order Error => $e",
+                    );
+
+                    if (!mounted) return;
+
                     ScaffoldMessenger.of(
                       context,
-                    ).showSnackBar(SnackBar(content: Text(e.toString())));
+                    ).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          e.toString(),
+                        ),
+                      ),
+                    );
                   }
                 },
                 child: const Text(
                   "Proceed To Payment",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ),

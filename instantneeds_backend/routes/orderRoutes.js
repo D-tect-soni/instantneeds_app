@@ -5,10 +5,21 @@ const {
   getOrders,
 } = require("../controllers/orderController");
 
+const authMiddleware = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-router.post("/", createOrder);
+// Create Order
+router.post(
+  "/",
+  authMiddleware,
+  createOrder,
+);
 
-router.get("/", getOrders);
-
+// Get Logged-in User Orders
+router.get(
+  "/",
+  authMiddleware,
+  getOrders,
+);
 module.exports = router;

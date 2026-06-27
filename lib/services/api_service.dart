@@ -33,50 +33,68 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  // Create Order
-  static Future createOrder({
-    required String serviceName,
-    required String address,
-    required int quantity,
-    required int amount,
-  }) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/api/orders"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "serviceName": serviceName,
-        "address": address,
-        "quantity": quantity,
-        "amount": amount,
-      }),
-    );
+ // Create Order
+static Future createOrder({
+  required String serviceName,
+  required String address,
+  required int quantity,
+  required int amount,
+}) async {
 
-    return jsonDecode(response.body);
-  }
+  final prefs = await SharedPreferences.getInstance();
+
+  String? token = prefs.getString("token");
+
+  final response = await http.post(
+    Uri.parse("$baseUrl/api/orders"),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "serviceName": serviceName,
+      "address": address,
+      "quantity": quantity,
+      "amount": amount,
+    }),
+  );
+
+  return jsonDecode(response.body);
+}
 
   // Get Orders
-  static Future getOrders() async {
-    final response = await http.get(Uri.parse("$baseUrl/api/orders"));
+static Future getOrders() async {
 
-    return jsonDecode(response.body);
-  }
+  final prefs = await SharedPreferences.getInstance();
 
-  // Get User Profile
-  static Future getProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString("token");
 
-    String? token = prefs.getString("token");
+  final response = await http.get(
+    Uri.parse("$baseUrl/api/orders"),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+  );
 
-    final response = await http.get(
-      Uri.parse("$baseUrl/api/auth/profile"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-      },
-    );
+  return jsonDecode(response.body);
+}
+// Get User Profile
+static Future getProfile() async {
+  final prefs = await SharedPreferences.getInstance();
 
-    return jsonDecode(response.body);
-  }
+  String? token = prefs.getString("token");
+
+  final response = await http.get(
+    Uri.parse("$baseUrl/api/auth/profile"),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+  );
+
+  return jsonDecode(response.body);
+}
 
   // Update User Profile
   static Future updateProfile({
