@@ -6,6 +6,9 @@ const {
   getProfile,
   updateProfile,
   uploadProfileImage,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -31,6 +34,8 @@ router.post(
   upload.single("image"),
   uploadProfileImage,
 );
-
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

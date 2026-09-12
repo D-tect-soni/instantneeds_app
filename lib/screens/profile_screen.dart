@@ -253,7 +253,6 @@ Future<void> pickImage() async {
             ),
 
             const SizedBox(height: 15),
-
             SizedBox(
               width: double.infinity,
               height: 55,

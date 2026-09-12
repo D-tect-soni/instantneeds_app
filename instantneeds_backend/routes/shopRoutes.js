@@ -1,12 +1,14 @@
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
-
+const upload = require("../middleware/uploadMiddleware");
 const {
   registerShop,
   getMyShop,
   updateShop,
   getVerifiedShops,
   getNearbyShops,
+  getProviderStatus,
+  uploadShopLogo,
 } = require("../controllers/shopController");
 
 const router = express.Router();
@@ -43,5 +45,17 @@ router.get(
   "/nearby",
   getNearbyShops
 );
-
+// Provider Status
+router.get(
+  "/provider-status",
+  authMiddleware,
+  getProviderStatus
+);
+// Upload Shop Logo
+router.post(
+  "/upload-logo",
+  authMiddleware,
+  upload.single("image"),
+  uploadShopLogo
+);
 module.exports = router;

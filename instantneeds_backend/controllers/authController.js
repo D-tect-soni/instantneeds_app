@@ -3,10 +3,19 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 // Register
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    console.log("========== REGISTER REQUEST ==========");
+    console.log(req.body);
+  const {
+  name,
+  email,
+  password,
+  role,
+} = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -16,19 +25,27 @@ exports.register = async (req, res) => {
       });
     }
 
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+   const user = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+  role: role || "customer",
+});
+console.log("User Created Successfully:", user.email);
 
     res.status(201).json(user);
 
   } catch (error) {
-    res.status(500).json(error);
-  }
+  console.error("REGISTER ERROR:", error);
+
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 };
 
 // Login
@@ -174,4 +191,156 @@ exports.uploadProfileImage = async (req, res) => {
       message: error.message,
     });
   }
+
+    };
+  // ================= Forgot Password =================
+
+const otpStore = new Map();
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Email not registered",
+      });
+    }
+
+    const otp = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
+
+    otpStore.set(email, {
+      otp,
+      expires: Date.now() + 5 * 60 * 1000,
+    });
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "InstantNeeds Password Reset OTP",
+      html: `
+        <h2>Password Reset</h2>
+        <p>Your OTP is:</p>
+        <h1>${otp}</h1>
+        <p>Valid for 5 minutes.</p>
+      `,
+    });
+
+    res.json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
+// ================= Verify OTP =================
+
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const data = otpStore.get(email);
+
+    if (!data) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found",
+      });
+    }
+
+    if (Date.now() > data.expires) {
+      otpStore.delete(email);
+
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired",
+      });
+    }
+
+    if (data.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "OTP Verified",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+// ================= Reset Password =================
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    const data = otpStore.get(email);
+
+    if (!data) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found",
+      });
+    }
+
+    if (data.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+
+    await user.save();
+
+    otpStore.delete(email);
+
+    res.json({
+      success: true,
+      message: "Password Reset Successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}

@@ -3,10 +3,16 @@ import '../services/api_service.dart';
 import 'payment_screen.dart';
 
 class OrderScreen extends StatefulWidget {
+  final String shopId;
+  final String shopName;
+  final String providerId;
   final String serviceName;
 
   const OrderScreen({
     super.key,
+    required this.shopId,
+    required this.shopName,
+    required this.providerId,
     required this.serviceName,
   });
 
@@ -50,6 +56,16 @@ class _OrderScreenState extends State<OrderScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 8),
+
+Text(
+  "Shop: ${widget.shopName}",
+  style: const TextStyle(
+    fontSize: 18,
+    color: Colors.grey,
+    fontWeight: FontWeight.w500,
+  ),
+),
 
             const SizedBox(height: 20),
 
@@ -168,17 +184,13 @@ class _OrderScreenState extends State<OrderScreen> {
 
                   try {
                     final response =
-                        await ApiService
-                            .createOrder(
-                      serviceName:
-                          widget.serviceName,
-                      address:
-                          addressController
-                              .text
-                              .trim(),
-                      quantity: quantity,
-                      amount: totalAmount,
-                    );
+    await ApiService.createOrder(
+  shopId: widget.shopId,
+  serviceName: widget.serviceName,
+  address: addressController.text.trim(),
+  quantity: quantity,
+  amount: totalAmount,
+                            );
 
                     print(
                       "Order Response => $response",
