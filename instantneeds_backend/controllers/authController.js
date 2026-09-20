@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const crypto = require("crypto");
 // Register
 exports.register = async (req, res) => {
@@ -218,28 +218,28 @@ exports.forgotPassword = async (req, res) => {
       expires: Date.now() + 5 * 60 * 1000,
     });
 
-    const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+   const resend = new Resend(process.env.RESEND_API_KEY);
+
+const { data, error } = await resend.emails.send({
+  from: "InstantNeeds <onboarding@resend.dev>",
+  to: [email],
+  subject: "InstantNeeds Password Reset OTP",
+  html: `
+    <h2>Password Reset</h2>
+    <p>Your OTP is:</p>
+    <h1 style="font-size: 32px;">${otp}</h1>
+    <p>This OTP is valid for 5 minutes.</p>
+  `,
 });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "InstantNeeds Password Reset OTP",
-      html: `
-        <h2>Password Reset</h2>
-        <p>Your OTP is:</p>
-        <h1>${otp}</h1>
-        <p>Valid for 5 minutes.</p>
-      `,
-    });
+if (error) {
+  console.error("RESEND ERROR:", error);
+
+  return res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 
     res.json({
       success: true,
